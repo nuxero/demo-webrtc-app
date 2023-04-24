@@ -6,10 +6,10 @@
 
 <body>
   <h1>WebRTC Demo</h1>
-  <video id="localVideo" autoplay></video>
+  <button id="join">Join</button>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const localVideo = document.getElementById("localVideo");
+    const btn = document.getElementById('join');
     const rtcPeerConnections = []
     const iceServers = {
       'iceServers': [
@@ -18,22 +18,15 @@
     }
     let myId;
 
-    navigator.mediaDevices
-      .getUserMedia({ audio: false, video: { width: 640, height: 480 } })
-      .then((stream) => {
-        /* use the stream */
-        localVideo.srcObject = stream;
-        startSignaling();
-      })
-      .catch((err) => {
-        /* handle the error */
-        console.error("An error occurred:", err)
-      });
+    btn.addEventListener('click', () => {
+      btn.display = 'none';
+      startSignaling();
+    });
 
     function startSignaling() {
       const socket = io({
         query: {
-          role: 'b'
+          role: 'v'
         }
       });
 
@@ -46,8 +39,10 @@
         switch (evt.type) {
           case 'join':
             console.log(evt.from + ' has joined');
-            rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
-            rtcPeerConnections[evt.from].createOffer().then(sdp => onOfferAnswer('offer', sdp, evt.from));
+            if (evt.role === 'b') {
+              rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
+              rtcPeerConnections[evt.from].createOffer({offerToReceiveVideo: true}).then(sdp => onOfferAnswer('offer', sdp, evt.from));
+            }
             break;
           case 'offer':
             console.log(evt.from + ' has sent an offer:', evt.sdp);
@@ -90,7 +85,6 @@
         const rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = e => onIceCandidate(e, remoteUser);
         rtcPeerConnection.ontrack = e => onAddStream(e, remoteUser);
-        rtcPeerConnection.addTrack(localVideo.srcObject.getVideoTracks()[0]);
 
         return rtcPeerConnection;
       }

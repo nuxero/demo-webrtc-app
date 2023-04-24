@@ -9,7 +9,7 @@ app.use(express.static('public'));
 
 io.on('connection', socket => {
   console.log('a user connected to the server', socket.id);
-  socket.broadcast.emit('event', {type: 'join', from: socket.id});
+  socket.broadcast.emit('event', {type: 'join', from: socket.id, role: socket.handshake.query.role});
 
   socket.on('event', evt => {
     console.log('a signaling event was sent:', JSON.stringify(evt.type));
