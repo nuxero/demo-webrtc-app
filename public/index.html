@@ -69,6 +69,7 @@
             videoElement.removeAttribute('srcObject'); // empty source
             videoElement.load();
             videoElement.remove();
+            rtcPeerConnections[evt.from].close();
             break;
         }
       });
