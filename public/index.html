@@ -62,6 +62,14 @@
               candidate: evt.candidate
             }));
             break;
+          case 'bye':
+            console.log(evt.from + ' has left');
+            const videoElement = document.getElementById('remote_' + evt.from);
+            videoElement.pause();
+            videoElement.removeAttribute('srcObject'); // empty source
+            videoElement.load();
+            videoElement.remove();
+            break;
         }
       });
 

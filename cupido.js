@@ -9,12 +9,16 @@ app.use(express.static('public'));
 
 io.on('connection', socket => {
   console.log('a user connected to the server', socket.id);
-
   socket.broadcast.emit('event', {type: 'join', from: socket.id});
 
   socket.on('event', evt => {
     console.log('a signaling event was sent:', JSON.stringify(evt.type));
     io.sockets.sockets.get(evt.to).emit('event', evt);
+  });
+
+  socket.on('disconnecting', _ => {
+    console.log('a user is leaving', socket.id);
+    socket.broadcast.emit('event', {type: 'bye', from: socket.id});
   });
 });
 
