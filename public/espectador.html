@@ -6,11 +6,20 @@
 
 <body>
   <h1>WebRTC Demo</h1>
+  <div id="chat">
+    <p>Chat:</p>
+  </div>
+  <input id="chatText" type="text" placeholder="Escribe un mensaje..." />
+  <button id="chatBtn">Enviar</button>
   <button id="join">Join</button>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const btn = document.getElementById('join');
+    const chat = document.getElementById("chat");
+    const chatText = document.getElementById("chatText");
+    const chatBtn = document.getElementById("chatBtn");
     const rtcPeerConnections = []
+    const dataChannels = []
     const iceServers = {
       'iceServers': [
         { 'urls': 'stun:stun.l.google.com:19302' }
@@ -22,6 +31,16 @@
       btn.style.display = 'none';
       startSignaling();
     });
+
+    chatBtn.addEventListener('click', () => {
+      for (dc in dataChannels) {
+        dataChannels[dc].send(myId + ': ' + chatText.value);
+      }
+
+      handleReceiveMessage({ data: chatText.value });
+      chatText.value = "";
+      chatText.focus();
+    })
 
     function startSignaling() {
       const socket = io({
@@ -39,14 +58,15 @@
         switch (evt.type) {
           case 'join':
             console.log(evt.from + ' has joined');
-            if (evt.role === 'b') {
-              rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
-              rtcPeerConnections[evt.from].createOffer({offerToReceiveVideo: true}).then(sdp => onOfferAnswer('offer', sdp, evt.from));
-            }
+            rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
+            dataChannels[evt.from] = rtcPeerConnections[evt.from].createDataChannel('chat');
+            dataChannels[evt.from].onmessage = handleReceiveMessage;
+            rtcPeerConnections[evt.from].createOffer(evt.role === 'b' ? { offerToReceiveVideo: true } : {}).then(sdp => onOfferAnswer('offer', sdp, evt.from));
             break;
           case 'offer':
             console.log(evt.from + ' has sent an offer:', evt.sdp);
             rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
+            rtcPeerConnections[evt.from].ondatachannel = e => receiveChannelCallback(e, evt.from);
             rtcPeerConnections[evt.from].setRemoteDescription(new RTCSessionDescription(evt.sdp));
             rtcPeerConnections[evt.from].createAnswer().then(sdp => onOfferAnswer('answer', sdp, evt.from));
             break;
@@ -122,6 +142,19 @@
         remoteVideo.srcObject = new MediaStream([event.track]);
         document.body.appendChild(remoteVideo);
       }
+    }
+
+    function receiveChannelCallback(event, from) {
+      dataChannels[from] = event.channel;
+      dataChannels[from].onmessage = handleReceiveMessage;
+    }
+
+    function handleReceiveMessage(e) {
+      const el = document.createElement('p');
+      const txtNode = document.createTextNode(e.data);
+      el.appendChild(txtNode);
+
+      chat.appendChild(el);
     }
   </script>
 </body>
