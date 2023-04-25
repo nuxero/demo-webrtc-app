@@ -2,16 +2,19 @@
 
 <head>
   <title>WebRTC Demo</title>
+  <link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 
 <body>
   <h1>WebRTC Demo</h1>
-  <div id="chat">
+  <div id="chat" class="chat">
     <p>Chat:</p>
+    <input id="chatText" type="text" placeholder="Escribe un mensaje..." />
+    <button id="chatBtn">Enviar</button>
   </div>
-  <input id="chatText" type="text" placeholder="Escribe un mensaje..." />
-  <button id="chatBtn">Enviar</button>
-  <video id="localVideo" autoplay></video>
+  <div class="videos">
+    <video id="localVideo" autoplay></video>
+  </div>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const localVideo = document.getElementById("localVideo");
@@ -148,7 +151,7 @@
         remoteVideo.id = 'remote_' + from;
         remoteVideo.autoplay = true;
         remoteVideo.srcObject = new MediaStream([event.track]);
-        document.body.appendChild(remoteVideo);
+        document.getElementsByClassName('videos')[0].appendChild(remoteVideo);
       }
     }
 
