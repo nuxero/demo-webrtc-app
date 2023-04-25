@@ -31,7 +31,7 @@
     let myId;
 
     navigator.mediaDevices
-      .getUserMedia({ audio: false, video: { width: 640, height: 480 } })
+      .getUserMedia({ audio: false, video: { width: 320, height: 240 } })
       .then((stream) => {
         /* use the stream */
         localVideo.srcObject = stream;
