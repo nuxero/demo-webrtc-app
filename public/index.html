@@ -2,11 +2,14 @@
 
 <head>
   <title>WebRTC Demo</title>
+  <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 
 <body>
   <h1>WebRTC Demo</h1>
-  <video id="localVideo" autoplay></video>
+  <div class="videos">
+    <video id="localVideo" autoplay></video>
+  </div>
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const localVideo = document.getElementById("localVideo");
@@ -19,7 +22,7 @@
     let myId;
 
     navigator.mediaDevices
-      .getUserMedia({ audio: false, video: { width: 640, height: 480 } })
+      .getUserMedia({ audio: false, video: { width: 320, height: 240 } })
       .then((stream) => {
         /* use the stream */
         localVideo.srcObject = stream;
@@ -118,7 +121,7 @@
         remoteVideo.id = 'remote_' + from;
         remoteVideo.autoplay = true;
         remoteVideo.srcObject = new MediaStream([event.track]);
-        document.body.appendChild(remoteVideo);
+        document.getElementsByClassName('videos')[0].appendChild(remoteVideo);
       }
     }
   </script>
