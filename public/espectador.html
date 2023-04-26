@@ -62,9 +62,14 @@
           case 'join':
             console.log(evt.from + ' has joined');
             rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
+            if (evt.role === 'b') {
+              rtcPeerConnections[evt.from].addTransceiver('video', {direction: 'recvonly'});
+            }
+
             dataChannels[evt.from] = rtcPeerConnections[evt.from].createDataChannel('chat');
             dataChannels[evt.from].onmessage = handleReceiveMessage;
-            rtcPeerConnections[evt.from].createOffer(evt.role === 'b' ? { offerToReceiveVideo: true } : {}).then(sdp => onOfferAnswer('offer', sdp, evt.from));
+            
+            rtcPeerConnections[evt.from].createOffer().then(sdp => onOfferAnswer('offer', sdp, evt.from));
             break;
           case 'offer':
             console.log(evt.from + ' has sent an offer:', evt.sdp);
