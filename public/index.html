@@ -46,13 +46,13 @@
 
     chatBtn.addEventListener('click', () => {
       for (const dc in dataChannels) {
-        dataChannels[dc].send(myId + ': ' + chatText.value);
+        dataChannels[dc].send(myId + ':<br/>' + chatText.value);
       }
 
       handleReceiveMessage({ data: chatText.value });
       chatText.value = "";
       chatText.focus();
-    })
+    });
 
     function startSignaling() {
       const socket = io({
@@ -71,15 +71,19 @@
           case 'join':
             console.log(evt.from + ' has joined');
             rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
+
             dataChannels[evt.from] = rtcPeerConnections[evt.from].createDataChannel('chat');
             dataChannels[evt.from].onmessage = handleReceiveMessage;
+
             rtcPeerConnections[evt.from].createOffer().then(sdp => onOfferAnswer('offer', sdp, evt.from));
             break;
           case 'offer':
             console.log(evt.from + ' has sent an offer:', evt.sdp);
             rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
-            rtcPeerConnections[evt.from].ondatachannel = e => receiveChannelCallback(e, evt.from);
             rtcPeerConnections[evt.from].setRemoteDescription(new RTCSessionDescription(evt.sdp));
+
+            rtcPeerConnections[evt.from].ondatachannel = e => receiveChannelCallback(e, evt.from);
+            
             rtcPeerConnections[evt.from].createAnswer().then(sdp => onOfferAnswer('answer', sdp, evt.from));
             break;
           case 'answer':

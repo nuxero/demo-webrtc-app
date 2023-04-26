@@ -37,13 +37,13 @@
 
     chatBtn.addEventListener('click', () => {
       for (dc in dataChannels) {
-        dataChannels[dc].send(myId + ': ' + chatText.value);
+        dataChannels[dc].send(myId + ':<br/>' + chatText.value);
       }
 
       handleReceiveMessage({ data: chatText.value });
       chatText.value = "";
       chatText.focus();
-    })
+    });
 
     function startSignaling() {
       const socket = io({
@@ -74,8 +74,10 @@
           case 'offer':
             console.log(evt.from + ' has sent an offer:', evt.sdp);
             rtcPeerConnections[evt.from] = createRTCPeerConnection(evt.from);
-            rtcPeerConnections[evt.from].ondatachannel = e => receiveChannelCallback(e, evt.from);
             rtcPeerConnections[evt.from].setRemoteDescription(new RTCSessionDescription(evt.sdp));
+
+            rtcPeerConnections[evt.from].ondatachannel = e => receiveChannelCallback(e, evt.from);
+            
             rtcPeerConnections[evt.from].createAnswer().then(sdp => onOfferAnswer('answer', sdp, evt.from));
             break;
           case 'answer':
