@@ -15,7 +15,7 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const localVideo = document.getElementById("localVideo");
-    const rtcPeerConnections = []
+    const rtcPeerConnections = {}
     const iceServers = {
       'iceServers': [
         { 'urls': 'stun:stun.l.google.com:19302' }
@@ -42,7 +42,7 @@
       socket.on('connect', () => {
         console.log('My id is:', socket.id);
         myId = socket.id
-      })
+      });
 
       socket.on('event', evt => {
         switch (evt.type) {
@@ -79,9 +79,6 @@
 
             rtcPeerConnections[evt.from].close();
             delete rtcPeerConnections[evt.from];
-
-            dataChannels[evt.from].close();
-            delete dataChannels[evt.from];
             break;
         }
       });
@@ -93,7 +90,7 @@
       function createRTCPeerConnection(remoteUser) {
         const rtcPeerConnection = new RTCPeerConnection(iceServers);
         rtcPeerConnection.onicecandidate = e => onIceCandidate(e, remoteUser);
-        rtcPeerConnection.ontrack = e => onAddStream(e, remoteUser);
+        rtcPeerConnection.ontrack = e => onAddTrack(e, remoteUser);
         rtcPeerConnection.addTrack(localVideo.srcObject.getVideoTracks()[0]);
 
         return rtcPeerConnection;
@@ -120,11 +117,11 @@
             label: event.candidate.sdpMLineIndex,
             id: event.candidate.sdpMid,
             candidate: event.candidate.candidate
-          })
+          });
         }
       }
 
-      function onAddStream(event, from) {
+      function onAddTrack(event, from) {
         console.log('got video from', from);
         const remoteVideo = document.createElement('video');
         remoteVideo.id = 'remote_' + from;
