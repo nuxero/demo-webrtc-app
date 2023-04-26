@@ -21,8 +21,8 @@
     const chat = document.getElementById("chat");
     const chatText = document.getElementById("chatText");
     const chatBtn = document.getElementById("chatBtn");
-    const rtcPeerConnections = []
-    const dataChannels = []
+    const rtcPeerConnections = {}
+    const dataChannels = {}
     const iceServers = {
       'iceServers': [
         { 'urls': 'stun:stun.l.google.com:19302' }
@@ -102,6 +102,11 @@
             }
             if (rtcPeerConnections[evt.from]) {
               rtcPeerConnections[evt.from].close();
+              delete rtcPeerConnections[evt.from];
+            }
+            if (dataChannels[evt.from]) {
+              dataChannels[evt.from].close();
+              delete dataChannels[evt.from];
             }
             break;
         }

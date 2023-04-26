@@ -95,6 +95,11 @@
             }
             if (rtcPeerConnections[evt.from]) {
               rtcPeerConnections[evt.from].close();
+              delete rtcPeerConnections[evt.from];
+            }
+            if (dataChannels[evt.from]) {
+              dataChannels[evt.from].close();
+              delete dataChannels[evt.from];
             }
             break;
         }
