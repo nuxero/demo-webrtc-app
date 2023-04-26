@@ -7,8 +7,10 @@
 
 <body>
   <h1>WebRTC Demo</h1>
-  <div class="videos">
-    <video id="localVideo" autoplay></video>
+  <div class="container">
+    <div class="videos">
+      <video id="localVideo" autoplay></video>
+    </div>
   </div>
   <script src="/socket.io/socket.io.js"></script>
   <script>
@@ -22,10 +24,11 @@
     let myId;
 
     navigator.mediaDevices
-      .getUserMedia({ audio: false, video: { width: 320, height: 240 } })
+      .getUserMedia({ audio: false, video: true })
       .then((stream) => {
         /* use the stream */
         localVideo.srcObject = stream;
+        styleVideos();
         startSignaling();
       })
       .catch((err) => {
@@ -72,7 +75,13 @@
             videoElement.removeAttribute('srcObject'); // empty source
             videoElement.load();
             videoElement.remove();
+            styleVideos();
+
             rtcPeerConnections[evt.from].close();
+            delete rtcPeerConnections[evt.from];
+
+            dataChannels[evt.from].close();
+            delete dataChannels[evt.from];
             break;
         }
       });
@@ -122,6 +131,31 @@
         remoteVideo.autoplay = true;
         remoteVideo.srcObject = new MediaStream([event.track]);
         document.getElementsByClassName('videos')[0].appendChild(remoteVideo);
+
+        styleVideos();
+      }
+    }
+
+    function styleVideos() {
+      const videosGrid = document.querySelector('.videos');
+      const videos = videosGrid.querySelectorAll('video');
+
+      if (videos.length === 1) {
+        videos[0].style.gridRow = '1 / span 2';
+        videos[0].style.gridColumn = '1 / span 2';
+      } else if (videos.length === 2) {
+        videos[0].style.gridRow = '1 / span 2';
+        videos[0].style.gridColumn = '1 / span 1';
+        videos[1].style.gridRow = '1 / span 2';
+        videos[1].style.gridColumn = '2 / span 1';
+      } else if (videos.length >= 3) {
+        if (videos.length > 4) {
+          videosGrid.style.gridTemplateColumns = `repeat(${Math.ceil(videos.length / 2)}, 1fr)`;
+        }
+        videos.forEach((video, index) => {
+          video.style.gridRow = 'auto';
+          video.style.gridColumn = 'auto';
+        });
       }
     }
   </script>
